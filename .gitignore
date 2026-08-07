@@ -12,6 +12,7 @@ node_modules/
 out/
 dist/
 .turbo/
+*.tsbuildinfo
 
 # Prisma generated client
 packages/db/generated/

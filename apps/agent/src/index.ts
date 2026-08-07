@@ -1,4 +1,4 @@
-import { prisma } from "@trader/db";
+import { Prisma, prisma } from "@trader/db";
 import { formatPct, formatUsd } from "@trader/shared";
 import { ensureBootstrap } from "./bootstrap.js";
 import { loadConfig } from "./config.js";
@@ -9,8 +9,10 @@ import type { BrokerAdapter } from "./execution/types.js";
 
 const BACKFILL_STEPS = 180;
 
-async function audit(event: string, detail: Record<string, unknown> = {}, level = "info") {
-  await prisma.auditLog.create({ data: { event, level, detail } });
+async function audit(event: string, detail: unknown = {}, level = "info") {
+  await prisma.auditLog.create({
+    data: { event, level, detail: detail as Prisma.InputJsonObject },
+  });
 }
 
 function pickBroker(mode: string, allowLive: boolean, url: string): BrokerAdapter {

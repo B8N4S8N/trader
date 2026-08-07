@@ -11,7 +11,7 @@
   "scripts": {
     "generate": "prisma generate",
     "push": "dotenv -e ../../.env -- prisma db push",
-    "reset": "dotenv -e ../../.env -- prisma db push --force-reset && pnpm run seed",
+    "reset": "dotenv -e ../../.env -- tsx prisma/reset.ts && pnpm run seed",
     "seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
     "studio": "dotenv -e ../../.env -- prisma studio",
     "lint": "tsc --noEmit -p tsconfig.json",
