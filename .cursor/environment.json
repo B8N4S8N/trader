@@ -12,5 +12,5 @@
       "command": "pnpm dev:dashboard"
     }
   ],
-  "ports": [3000]
+  "ports": [{ "name": "dashboard", "port": 3000 }]
 }
