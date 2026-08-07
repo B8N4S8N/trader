@@ -1,0 +1,32 @@
+# Lessons
+
+Running log of non-obvious gotchas encountered while building this repo, so we
+don't repeat them.
+
+## Environment / tooling
+
+- **Prisma CLI does not read the monorepo-root `.env`.** Our app code loads it
+  (walking up from cwd in `packages/db/src/env.ts`), but the `prisma` CLI only
+  looks in its own cwd. Fix: run CLI scripts through `dotenv-cli`
+  (`dotenv -e ../../.env -- prisma ...`).
+- **pnpm v10 blocks native build scripts by default.** `esbuild` (needed by
+  `tsx`) and the Prisma engines won't build until listed under
+  `pnpm.onlyBuiltDependencies` in the root `package.json`.
+- **Prisma + Next.js:** use the **default** Prisma client output (not a custom
+  `output` path) and mark `@prisma/client` in
+  `experimental.serverComponentsExternalPackages`. Custom output + bundling
+  breaks query-engine path resolution.
+- **Next webpack can't resolve ESM `.js` specifiers that point at `.ts`
+  sources** in transpiled workspace packages. Fix with
+  `config.resolve.extensionAlias = { ".js": [".ts", ".tsx", ".js", ".jsx"] }`.
+- **`prisma db push --force-reset` is guarded** and requires explicit user
+  consent. For a repeatable dev reset, TRUNCATE the transactional tables via a
+  script instead (`packages/db/prisma/reset.ts`).
+- **Run Postgres as the current user** from a local data dir (`$HOME/pgdata`)
+  so the environment `start` step needs no sudo at boot.
+
+## Prisma typing
+
+- `Json` columns expect `Prisma.InputJsonValue`. A plain typed `interface`
+  (e.g. `RiskLimits`) is not assignable because it lacks an index signature —
+  cast at the boundary (`detail as Prisma.InputJsonObject`).

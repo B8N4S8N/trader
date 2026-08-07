@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+html,
+body {
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(56, 189, 248, 0.12), transparent 60%),
+    radial-gradient(900px 500px at 0% 0%, rgba(167, 139, 250, 0.1), transparent 55%),
+    #070b14;
+  color: #e5edf7;
+  min-height: 100vh;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-white/5 bg-base-850/70 backdrop-blur-sm shadow-lg shadow-black/20;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+}

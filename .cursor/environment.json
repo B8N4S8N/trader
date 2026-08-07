@@ -1,0 +1,16 @@
+{
+  "name": "Trader (AI trading agent + dashboard)",
+  "install": "([ -d /usr/lib/postgresql ] || (sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y postgresql postgresql-contrib)) && corepack enable && pnpm install --frozen-lockfile && pnpm db:generate",
+  "start": "[ -f .env ] || cp .env.example .env; bash scripts/db-start.sh && pnpm db:push && pnpm db:seed",
+  "terminals": [
+    {
+      "name": "agent",
+      "command": "pnpm dev:agent"
+    },
+    {
+      "name": "dashboard",
+      "command": "pnpm dev:dashboard"
+    }
+  ],
+  "ports": [{ "name": "dashboard", "port": 3000 }]
+}

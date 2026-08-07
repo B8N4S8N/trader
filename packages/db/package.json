@@ -1,0 +1,31 @@
+{
+  "name": "@trader/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "push": "dotenv -e ../../.env -- prisma db push",
+    "reset": "dotenv -e ../../.env -- tsx prisma/reset.ts && pnpm run seed",
+    "seed": "dotenv -e ../../.env -- tsx prisma/seed.ts",
+    "studio": "dotenv -e ../../.env -- prisma studio",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.1.0",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@trader/shared": "workspace:*",
+    "dotenv-cli": "^7.4.4",
+    "prisma": "^6.1.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
