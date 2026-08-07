@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Env / secrets
+.env
+.env.*.local
+*.local
+
+# Build output
+.next/
+out/
+dist/
+.turbo/
+
+# Prisma generated client
+packages/db/generated/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Local Postgres data (never commit)
+pgdata/

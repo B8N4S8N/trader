@@ -1,0 +1,35 @@
+{
+  "name": "trader",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomous AI trading agent (private) + public performance dashboard.",
+  "packageManager": "pnpm@10.33.3",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "db:generate": "pnpm --filter @trader/db run generate",
+    "db:push": "pnpm --filter @trader/db run push",
+    "db:seed": "pnpm --filter @trader/db run seed",
+    "db:reset": "pnpm --filter @trader/db run reset",
+    "dev:dashboard": "pnpm --filter @trader/dashboard run dev",
+    "dev:agent": "pnpm --filter @trader/agent run dev"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "turbo": "^2.3.3",
+    "typescript": "^5.6.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild"
+    ]
+  }
+}

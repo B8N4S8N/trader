@@ -1,0 +1,192 @@
+// Prisma schema for the Trader platform.
+// Source of truth for both the private agent and the public dashboard.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountKind {
+  PAPER
+  LIVE
+}
+
+enum StrategyType {
+  TECHNICAL
+  SENTIMENT
+  QUANT
+  SCALPING
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+}
+
+enum OrderStatus {
+  SIMULATED
+  PENDING
+  FILLED
+  CANCELLED
+  REJECTED
+}
+
+/// A trading account. The public dashboard reads PAPER and/or LIVE accounts;
+/// the agent only ever places orders into the account it is configured for.
+model Account {
+  id        String      @id @default(cuid())
+  name      String
+  kind      AccountKind @default(PAPER)
+  currency  String      @default("USD")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  orders    Order[]
+  trades    Trade[]
+  positions Position[]
+  snapshots PortfolioSnapshot[]
+
+  @@unique([name])
+}
+
+/// A named trading strategy. `config` holds strategy-specific tuning as JSON.
+model Strategy {
+  id          String       @id @default(cuid())
+  key         String       @unique
+  name        String
+  type        StrategyType
+  description String
+  enabled     Boolean      @default(true)
+  config      Json         @default("{}")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  signals Signal[]
+  orders  Order[]
+  trades  Trade[]
+
+  @@index([type])
+}
+
+/// A trading intent emitted by a strategy during analysis.
+model Signal {
+  id         String    @id @default(cuid())
+  strategyId String
+  strategy   Strategy  @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  symbol     String
+  side       OrderSide
+  strength   Float
+  price      Float
+  rationale  String
+  createdAt  DateTime  @default(now())
+
+  @@index([strategyId])
+  @@index([symbol])
+  @@index([createdAt])
+}
+
+/// An order routed to a broker adapter (paper or live Robinhood MCP).
+model Order {
+  id         String      @id @default(cuid())
+  accountId  String
+  account    Account     @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  strategyId String?
+  strategy   Strategy?   @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  symbol     String
+  side       OrderSide
+  type       OrderType   @default(MARKET)
+  qty        Float
+  limitPrice Float?
+  status     OrderStatus @default(SIMULATED)
+  simulated  Boolean     @default(true)
+  brokerRef  String?
+  reason     String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  trades Trade[]
+
+  @@index([accountId])
+  @@index([strategyId])
+  @@index([symbol])
+  @@index([status])
+}
+
+/// A filled execution. `realizedPnl` is populated on position-reducing fills.
+model Trade {
+  id          String    @id @default(cuid())
+  accountId   String
+  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  orderId     String?
+  order       Order?    @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  strategyId  String?
+  strategy    Strategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
+  symbol      String
+  side        OrderSide
+  qty         Float
+  price       Float
+  notional    Float
+  fees        Float     @default(0)
+  realizedPnl Float     @default(0)
+  executedAt  DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([accountId])
+  @@index([strategyId])
+  @@index([symbol])
+  @@index([executedAt])
+}
+
+/// Current holding per symbol for an account.
+model Position {
+  id          String   @id @default(cuid())
+  accountId   String
+  account     Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  symbol      String
+  qty         Float    @default(0)
+  avgPrice    Float    @default(0)
+  marketPrice Float    @default(0)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@unique([accountId, symbol])
+  @@index([accountId])
+}
+
+/// A point-in-time equity snapshot used to draw the growth / P&L curve.
+model PortfolioSnapshot {
+  id             String   @id @default(cuid())
+  accountId      String
+  account        Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  ts             DateTime
+  equity         Float
+  cash           Float
+  positionsValue Float
+  realizedPnl    Float    @default(0)
+  unrealizedPnl  Float    @default(0)
+  createdAt      DateTime @default(now())
+
+  @@unique([accountId, ts])
+  @@index([accountId, ts])
+}
+
+/// Append-only audit trail for risk decisions and agent lifecycle events.
+model AuditLog {
+  id        String   @id @default(cuid())
+  level     String   @default("info")
+  event     String
+  detail    Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([event])
+}
